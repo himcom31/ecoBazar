@@ -29,9 +29,9 @@ dist-ssr
 .env.production
 
 # Unnecessary for deployment
-public/
-eslint.config.js
-nginx.conf
-vite.config.js
-README.md
-index.html
+# public/
+# eslint.config.js
+# nginx.conf
+# vite.config.js
+# README.md
+# index.html
