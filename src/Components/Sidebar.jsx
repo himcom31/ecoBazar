@@ -94,14 +94,14 @@ const Sidebar = ({ sidebarOpen = true, onDesktopToggle, mobileOpen, onMobileClos
           items={[{ label: 'List Of Coupan', path: '/admin/coupanlist' }, { label: 'Add Coupan', path: '/admin/Addcoupan' }]}
           isActive={isActive} onNav={onMobileClose}
         />
-        <NavItem to="/admin/pusernotication" icon={<Bell size={20} />} label="Push Notification" active={isActive('/admin/pusernotication')} onClick={onMobileClose} />
+        {/* <NavItem to="/admin/pusernotication" icon={<Bell size={20} />} label="Push Notification" active={isActive('/admin/pusernotication')} onClick={onMobileClose} /> */}
         <DropdownNavItem
           icon={<Newspaper size={20} />} label="Blogs"
           defaultOpen={isAnyActive(['/admin/listBlog', '/admin/addBlogs'])}
           items={[{ label: 'List Of Blogs', path: '/admin/listBlog' }, { label: 'Add Blogs', path: '/admin/addBlogs' }]}
           isActive={isActive} onNav={onMobileClose}
         />
-        <NavItem to="/admin/reports" icon={<BarChart3 size={20} />} label="Report" active={isActive('/admin/reports')} giftIcon onClick={onMobileClose} />
+        {/* <NavItem to="/admin/reports" icon={<BarChart3 size={20} />} label="Report" active={isActive('/admin/reports')} giftIcon onClick={onMobileClose} /> */}
 
         {/* MESSAGES */}
         <SectionHeader title="MESSAGES" />
@@ -109,12 +109,12 @@ const Sidebar = ({ sidebarOpen = true, onDesktopToggle, mobileOpen, onMobileClos
 
         {/* USER MANAGEMENT */}
         <SectionHeader title="USER MANAGEMENT" />
-        <DropdownNavItem
-          icon={<Truck size={20} />} label="Delivery Agent"
+        {/* <DropdownNavItem
+           icon={<Truck size={20} />} label="Delivery Agent"
           defaultOpen={isAnyActive(['/admin/allDriver', '/admin/addDriver'])}
           items={[{ label: 'Delivery Agent', path: '/admin/allDriver' }, { label: 'Add Deliver Agent', path: '/admin/addDriver' }]}
           isActive={isActive} onNav={onMobileClose}
-        />
+        /> */}
         <NavItem to="/admin/customers" icon={<Users size={20} />} label="Customers" active={isActive('/admin/customers')} onClick={onMobileClose} />
 
         {/* ── SELLER MANAGEMENT (NEW) ── */}

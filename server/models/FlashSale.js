@@ -4,18 +4,21 @@ const createFlashSaleTables = async () => {
 
     await pool.query(`
         CREATE TABLE IF NOT EXISTS flash_sales (
-            id          INT AUTO_INCREMENT PRIMARY KEY,
-            name        VARCHAR(255)  NOT NULL,
-            minDiscount DECIMAL(5,2)  NOT NULL,
-            startDate   DATE          NOT NULL,
-            startTime   VARCHAR(20)   NOT NULL,
-            endDate     DATE          NOT NULL,
-            endTime     VARCHAR(20)   NOT NULL,
-            description TEXT          NOT NULL,
-            thumbnail   VARCHAR(500)  NOT NULL,
-            isActive    BOOLEAN       DEFAULT true,
-            createdAt   TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
-            updatedAt   TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            id                INT AUTO_INCREMENT PRIMARY KEY,
+            name              VARCHAR(255)  NOT NULL,
+            minDiscount       DECIMAL(5,2)  NOT NULL,
+            startDate         DATE          NOT NULL,
+            startTime         VARCHAR(20)   NOT NULL,
+            endDate           DATE          NOT NULL,
+            endTime           VARCHAR(20)   NOT NULL,
+            description       TEXT          NOT NULL,
+            desktopMedia      VARCHAR(500)  NOT NULL,
+            desktopMediaType  ENUM('image','video') DEFAULT 'image',
+            mobileMedia       VARCHAR(500)  NOT NULL,
+            mobileMediaType   ENUM('image','video') DEFAULT 'image',
+            isActive          BOOLEAN       DEFAULT true,
+            createdAt         TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+            updatedAt         TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )
     `);
 
@@ -57,12 +60,37 @@ const hydrateMany = (rows) => Promise.all(rows.map(hydrateOne));
 
 const FlashSale = {
 
-    create: async ({ name, minDiscount, startDate, startTime, endDate, endTime, description, thumbnail }) => {
+    create: async ({
+        name,
+        minDiscount,
+        startDate,
+        startTime,
+        endDate,
+        endTime,
+        description,
+        desktopMedia,
+        desktopMediaType,
+        mobileMedia,
+        mobileMediaType,
+    }) => {
         const [result] = await pool.query(`
             INSERT INTO flash_sales
-                (name, minDiscount, startDate, startTime, endDate, endTime, description, thumbnail)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `, [name, minDiscount, startDate, startTime, endDate, endTime, description, thumbnail]);
+                (name, minDiscount, startDate, startTime, endDate, endTime, description,
+                 desktopMedia, desktopMediaType, mobileMedia, mobileMediaType)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            name,
+            minDiscount,
+            startDate,
+            startTime,
+            endDate,
+            endTime,
+            description,
+            desktopMedia,
+            desktopMediaType || 'image',
+            mobileMedia,
+            mobileMediaType || 'image',
+        ]);
 
         const [rows] = await pool.query(`SELECT * FROM flash_sales WHERE id = ?`, [result.insertId]);
         return hydrateOne(rows[0]);

@@ -5,14 +5,29 @@ const Product   = require('../models/product_Management/Product');
 exports.addFlashSale = async (req, res) => {
     try {
         const { name, minDiscount, startDate, startTime, endDate, endTime, description } = req.body;
-        const thumbnail = req.file ? req.file.path : null;
 
-        if (!thumbnail) {
-            return res.status(400).json({ success: false, message: "Flash Sale Thumbnail is required" });
+        const desktopFile = req.files?.desktopMedia?.[0];
+        const mobileFile   = req.files?.mobileMedia?.[0];
+
+        if (!desktopFile) {
+            return res.status(400).json({ success: false, message: "Desktop banner (image or video) is required" });
+        }
+        if (!mobileFile) {
+            return res.status(400).json({ success: false, message: "Mobile banner (image or video) is required" });
         }
 
         const flashSale = await FlashSale.create({
-            name, minDiscount, startDate, startTime, endDate, endTime, description, thumbnail,
+            name,
+            minDiscount,
+            startDate,
+            startTime,
+            endDate,
+            endTime,
+            description,
+            desktopMedia: desktopFile.path,
+            desktopMediaType: desktopFile.mediaType,   // 'image' | 'video' — set by compressAndUploadFields middleware
+            mobileMedia: mobileFile.path,
+            mobileMediaType: mobileFile.mediaType,
         });
 
         res.status(201).json({ success: true, message: "Flash Sale Created!", flashSale });
@@ -46,7 +61,19 @@ exports.getFlashSaleById = async (req, res) => {
 exports.updateFlashSale = async (req, res) => {
     try {
         const updateData = { ...req.body };
-        if (req.file) updateData.thumbnail = req.file.path;
+
+        const desktopFile = req.files?.desktopMedia?.[0];
+        const mobileFile   = req.files?.mobileMedia?.[0];
+
+        // sirf jo file naye se upload hui usi ko update karo, baaki jaisa tha waisa rahe
+        if (desktopFile) {
+            updateData.desktopMedia = desktopFile.path;
+            updateData.desktopMediaType = desktopFile.mediaType;
+        }
+        if (mobileFile) {
+            updateData.mobileMedia = mobileFile.path;
+            updateData.mobileMediaType = mobileFile.mediaType;
+        }
 
         const sale = await FlashSale.findByIdAndUpdate(req.params.id, updateData);
         if (!sale) return res.status(404).json({ success: false, message: "Flash Sale not found" });

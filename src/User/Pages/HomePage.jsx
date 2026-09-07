@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import FlashSalePage from "./FlashSalePage";
 import { openLoginModal } from "../utils/authEvents";
 import { addToCart, toggleWishlist, fetchWishlist } from "../utils/cartWishlist";
+import FlashSaleBanner from "./Flashsalebanner"
 import { useNavigate } from "react-router-dom";
 const API_BASEA = import.meta.env.VITE_API_URL;
+
 
 
 
@@ -57,7 +59,6 @@ const StarRating = ({ rating = 4 }) => (
 );
 
 // ─── Cart Toast ───────────────────────────────────────────────────────────────
-// Dispatch this event from anywhere: window.dispatchEvent(new CustomEvent("cart:added", { detail: { name, image } }))
 const CartToast = () => {
   const [toasts, setToasts] = useState([]);
 
@@ -67,7 +68,6 @@ const CartToast = () => {
       const { name, image } = e.detail || {};
       setToasts(prev => [...prev, { id, name, image, exiting: false }]);
 
-      // Start exit animation after 2.8s, remove after 3.2s
       setTimeout(() => {
         setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
       }, 2800);
@@ -120,7 +120,6 @@ const CartToast = () => {
               pointerEvents: "auto",
             }}
           >
-            {/* Product image or fallback */}
             <div style={{
               width: 48, height: 48, borderRadius: 8, overflow: "hidden", flexShrink: 0,
               background: "#f0f9f0", display: "flex", alignItems: "center", justifyContent: "center",
@@ -132,10 +131,8 @@ const CartToast = () => {
               }
             </div>
 
-            {/* Text */}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                {/* Green checkmark circle */}
                 <span style={{
                   width: 18, height: 18, borderRadius: "50%", background: "#2d9e2d",
                   display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
@@ -154,7 +151,6 @@ const CartToast = () => {
               </div>
             </div>
 
-            {/* Progress bar */}
             <div style={{
               position: "absolute", bottom: 0, left: 0, height: 3,
               background: "#2d9e2d", borderRadius: "0 0 0 12px",
@@ -181,7 +177,6 @@ const HeroBanner = () => {
         const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/banner/list`);
         const data = await res.json();
         if (data.success) {
-          // only show Active banners on frontend
           setSlides(data.data.filter(b => b.status === 'Active'));
         }
       } catch (err) {
@@ -211,7 +206,7 @@ const HeroBanner = () => {
     <div style={{
       width: '100%', height, borderRadius: isMobile ? 8 : 10,
       background: '#e5e7eb',
-      marginBottom: isMobile ? 32 : isTablet ? 48 : 98,
+      marginBottom: isMobile ? 24 : isTablet ? 40 : 80,
     }} />
   );
 
@@ -221,7 +216,7 @@ const HeroBanner = () => {
     <div style={{
       position: 'relative', width: '100%', height,
       borderRadius: isMobile ? 8 : 10, overflow: 'hidden',
-      marginBottom: isMobile ? 32 : isTablet ? 48 : 98,
+      marginBottom: isMobile ? 24 : isTablet ? 40 : 80,
       boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
     }}>
       <img
@@ -234,7 +229,6 @@ const HeroBanner = () => {
           transition: 'opacity 0.4s ease'
         }}
       />
-      {/* dots */}
       <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'flex-end', padding: isMobile ? '0 16px 16px' : '0 48px 32px' }}>
         <div style={{ display: 'flex', gap: 5 }}>
           {slides.map((_, i) => (
@@ -246,12 +240,10 @@ const HeroBanner = () => {
           ))}
         </div>
       </div>
-      {/* prev */}
       <button onClick={() => goTo((slide - 1 + slides.length) % slides.length)}
         style={{ position: 'absolute', top: '50%', left: isMobile ? 6 : 12, transform: 'translateY(-50%)', width: isMobile ? 26 : 32, height: isMobile ? 26 : 32, borderRadius: '50%', background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.4)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <ChevronLeft />
       </button>
-      {/* next */}
       <button onClick={() => goTo((slide + 1) % slides.length)}
         style={{ position: 'absolute', top: '50%', right: isMobile ? 6 : 12, transform: 'translateY(-50%)', width: isMobile ? 26 : 32, height: isMobile ? 26 : 32, borderRadius: '50%', background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.4)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <ChevronRight />
@@ -307,7 +299,7 @@ const FeatureCategories = ({ categories, loading, products }) => {
   const cols = `repeat(${Math.min(total || visible, visible)}, 1fr)`;
 
   return (
-    <section id="feature-categories" style={{ marginBottom: isMobile ? 32 : isTablet ? 48 : 98, scrollMarginTop: 80 }}>
+    <section id="feature-categories" style={{ marginBottom: isMobile ? 28 : isTablet ? 40 : 72, scrollMarginTop: 80 }}>
       <SectionHeader
         title="Feature Category"
         onPrev={() => setStart(s => Math.max(0, s - 1))}
@@ -358,10 +350,19 @@ const FeatureCategories = ({ categories, loading, products }) => {
   );
 };
 
-// ─── Promo Banners ────────────────────────────────────────────────────────────
+
+
+// ─── Promo Banners (ads) ───────────────────────────────────────────────────────
+// ─── Promo Banners (mobile: animated peek carousel with auto-scroll) ─────────
 const PromoBanners = () => {
   const { isMobile, isTablet } = useResponsive();
   const [ads, setAds] = useState([]);
+  const scrollRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0); // continuous, for smooth scaling
+  const isUserInteracting = useRef(false);
+  const resumeTimer = useRef(null);
+  const autoScrollTimer = useRef(null);
 
   useEffect(() => {
     fetch(`${API_BASEA}/api/ad/`)
@@ -377,58 +378,181 @@ const PromoBanners = () => {
   ];
 
   const items = ads.length > 0 ? ads : fallbacks;
-  const cols = isMobile ? "1fr" : isTablet ? "1fr 1fr" : `repeat(${Math.min(items.length, 3)}, 1fr)`;
-  const bannerHeight = isMobile ? 160 : isTablet ? 220 : 320;
+
+  // ── Auto-scroll (mobile only) ──
+  useEffect(() => {
+    if (!isMobile || items.length <= 1) return;
+
+    autoScrollTimer.current = setInterval(() => {
+      if (isUserInteracting.current) return;
+      const el = scrollRef.current;
+      if (!el) return;
+
+      const cardWidth = el.scrollWidth / items.length;
+      const nextIndex = (Math.round(el.scrollLeft / cardWidth) + 1) % items.length;
+
+      el.scrollTo({
+        left: nextIndex === 0 ? 0 : nextIndex * cardWidth,
+        behavior: "smooth",
+      });
+    }, 3000);
+
+    return () => clearInterval(autoScrollTimer.current);
+  }, [isMobile, items.length]);
+
+  const pauseAutoScroll = () => {
+    isUserInteracting.current = true;
+    clearTimeout(resumeTimer.current);
+  };
+
+  const resumeAutoScrollSoon = () => {
+    clearTimeout(resumeTimer.current);
+    resumeTimer.current = setTimeout(() => {
+      isUserInteracting.current = false;
+    }, 4000);
+  };
+
+  const renderCard = (item, i, height) => {
+    if (item.image) {
+      return (
+        <div
+          key={item.id || i}
+          style={{
+            borderRadius: 14, overflow: "hidden", cursor: "pointer",
+            position: "relative", boxShadow: "0 2px 10px rgba(0,0,0,0.12)",
+            background: "#111", height, width: "100%",
+          }}
+        >
+          <img src={item.image} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          {item.title && (
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent,rgba(0,0,0,0.65))", padding: "18px 12px 10px" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#fff", textAlign: "center" }}>{item.title}</div>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return (
+      <div
+        key={i}
+        style={{
+          background: item.bg, borderRadius: 14, padding: "18px 16px",
+          height, width: "100%", display: "flex", flexDirection: "column",
+          justifyContent: "space-between", cursor: "pointer", overflow: "hidden",
+          position: "relative",
+        }}
+      >
+        <div style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", fontSize: 44, opacity: 0.25 }}>{item.emoji}</div>
+        <div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 2 }}>{item.tag}</div>
+          <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", lineHeight: 1.1 }}>{item.label}</div>
+          {item.sub && <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", opacity: 0.85 }}>{item.sub}</div>}
+        </div>
+        <div style={{
+          display: "inline-block", background: item.color,
+          color: item.color === "#fff" ? "#e67e22" : "#000",
+          fontWeight: 800, fontSize: 12, padding: "3px 10px", borderRadius: 4, alignSelf: "flex-start"
+        }}>{item.badge}</div>
+      </div>
+    );
+  };
+
+  // ── Mobile: animated swipeable peek carousel ──
+  if (isMobile) {
+    const height = 180;
+    const sidePad = 34;
+
+    const handleScroll = () => {
+      const el = scrollRef.current;
+      if (!el) return;
+      const cardWidth = el.scrollWidth / items.length;
+      const rawIndex = el.scrollLeft / cardWidth;
+      setScrollProgress(rawIndex);
+      const idx = Math.round(rawIndex);
+      setActiveIndex(Math.max(0, Math.min(items.length - 1, idx)));
+    };
+
+    const trackWidth = 120;
+    const segWidth = items.length > 0 ? trackWidth / items.length : trackWidth;
+    const segLeft = activeIndex * segWidth;
+
+    return (
+      <section style={{ marginBottom: 24, animation: "promoFadeInUp 0.6s cubic-bezier(0.16,1,0.3,1) both" }}>
+        <style>{`
+          @keyframes promoFadeInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes progressGlow {
+            0%, 100% { box-shadow: 0 0 0 rgba(45,158,45,0); }
+            50%      { box-shadow: 0 0 8px rgba(45,158,45,0.6); }
+          }
+        `}</style>
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          onTouchStart={pauseAutoScroll}
+          onTouchEnd={resumeAutoScrollSoon}
+          onMouseDown={pauseAutoScroll}
+          onMouseUp={resumeAutoScrollSoon}
+          style={{
+            display: "flex", gap: 10, overflowX: "auto",
+            scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch",
+            padding: `20px ${sidePad}px`, scrollbarWidth: "none",
+            scrollBehavior: "smooth",
+          }}
+        >
+          {items.map((item, i) => {
+            const distance = Math.min(Math.abs(scrollProgress - i), 1);
+            const scale = 1 - distance * 0.12;
+            const opacity = 1 - distance * 0.45;
+            const translateY = distance * 8;
+
+            return (
+              <div
+                key={item.id || i}
+                style={{
+                  flex: `0 0 calc(100% - ${sidePad * 2}px)`,
+                  scrollSnapAlign: "center",
+                  transform: `scale(${scale}) translateY(${translateY}px)`,
+                  opacity,
+                  transition: "transform 0.35s cubic-bezier(0.34,1.15,0.64,1), opacity 0.35s ease",
+                  transformOrigin: "center",
+                }}
+              >
+                {renderCard(item, i, height)}
+              </div>
+            );
+          })}
+        </div>
+
+        {items.length > 1 && (
+          <div style={{
+            width: trackWidth, height: 5, borderRadius: 3, background: "#e0e0e0",
+            margin: "14px auto 0", position: "relative", overflow: "hidden",
+          }}>
+            <div style={{
+              position: "absolute", top: 0, left: segLeft, width: segWidth, height: "100%",
+              background: "#2d9e2d", borderRadius: 3,
+              transition: "left 0.45s cubic-bezier(0.34,1.15,0.64,1)",
+              animation: "progressGlow 1.6s ease-in-out infinite",
+            }} />
+          </div>
+        )}
+      </section>
+    );
+  }
+
+  // ── Tablet / Desktop: grid (unchanged) ──
+  const cols = isTablet ? "1fr 1fr" : `repeat(${Math.min(items.length, 3)}, 1fr)`;
+  const bannerHeight = isTablet ? 200 : 260;
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: cols, gap: isMobile ? 10 : 20, marginBottom: isMobile ? 32 : isTablet ? 48 : 98 }}>
-      {items.slice(0, isMobile ? 2 : 3).map((item, i) => {
-        if (item.image) {
-          return (
-            <div
-              key={item.id || i}
-              style={{
-                borderRadius: 10, overflow: "hidden", cursor: "pointer",
-                position: "relative", boxShadow: "0 2px 10px rgba(0,0,0,0.12)",
-                transition: "transform 0.2s", background: "#111"
-              }}
-              onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
-              onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
-            >
-              <img src={item.image} alt={item.title} style={{ width: "100%", height: bannerHeight, objectFit: "cover", display: "block" }} />
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent,rgba(0,0,0,0.65))", padding: "18px 12px 10px" }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "#fff", textAlign: "center" }}>{item.title}</div>
-              </div>
-            </div>
-          );
-        }
-        return (
-          <div
-            key={i}
-            style={{
-              background: item.bg, borderRadius: 10, padding: isMobile ? "16px 14px" : "22px 20px",
-              minHeight: isMobile ? 120 : 140, display: "flex", flexDirection: "column",
-              justifyContent: "space-between", cursor: "pointer", overflow: "hidden",
-              position: "relative", transition: "transform 0.2s"
-            }}
-            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
-          >
-            <div style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", fontSize: isMobile ? 36 : 52, opacity: 0.25 }}>{item.emoji}</div>
-            <div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 2 }}>{item.tag}</div>
-              <div style={{ fontSize: isMobile ? 16 : 20, fontWeight: 900, color: "#fff", lineHeight: 1.1 }}>{item.label}</div>
-              {item.sub && <div style={{ fontSize: isMobile ? 12 : 14, fontWeight: 700, color: "#fff", opacity: 0.85 }}>{item.sub}</div>}
-            </div>
-            <div style={{
-              display: "inline-block", background: item.color,
-              color: item.color === "#fff" ? "#e67e22" : "#000",
-              fontWeight: 800, fontSize: 12, padding: "3px 10px", borderRadius: 4, alignSelf: "flex-start"
-            }}>{item.badge}</div>
-          </div>
-        );
-      })}
-    </div>
+    <section style={{ marginBottom: isTablet ? 36 : 60 }}>
+      <div style={{ display: "grid", gridTemplateColumns: cols, gap: 20 }}>
+        {items.slice(0, 3).map((item, i) => renderCard(item, i, bannerHeight))}
+      </div>
+    </section>
   );
 };
 
@@ -472,7 +596,6 @@ const ProductCard = ({ product }) => {
       setAdded(true);
       setTimeout(() => setAdded(false), 1800);
 
-      // 🔔 Fire the toast event with product details
       window.dispatchEvent(new CustomEvent("cart:added", {
         detail: { name, image }
       }));
@@ -581,12 +704,11 @@ const ProductCard = ({ product }) => {
   );
 };
 
-// ─── Popular Products ─────────────────────────────────────────────────────────
-const PopularProducts = ({ products, loading, onFlashSaleClick }) => {
+// ─── Popular Products (tabs + grid only, flash sale card moved out) ──────────
+const PopularProducts = ({ products, loading }) => {
   const { isMobile, isTablet } = useResponsive();
   const [activeTab, setActiveTab] = useState("All");
   const [categories, setCategories] = useState([]);
-  const [flashSale, setFlashSale] = useState(null);
 
   useEffect(() => {
     fetch(`${API_BASEA}/api/Category/all`)
@@ -594,17 +716,6 @@ const PopularProducts = ({ products, loading, onFlashSaleClick }) => {
       .then(data => {
         const cats = Array.isArray(data) ? data : data.categories || data.data || [];
         setCategories(cats.filter(c => c.isActive));
-      })
-      .catch(() => { });
-  }, []);
-
-  useEffect(() => {
-    fetch(`${API_BASEA}/api/flash/all`)
-      .then(r => r.json())
-      .then(data => {
-        const sales = data.sales || data.flashSales || data.data || [];
-        const active = sales.find(s => s.isActive) || sales[0];
-        if (active) setFlashSale(active);
       })
       .catch(() => { });
   }, []);
@@ -631,14 +742,12 @@ const PopularProducts = ({ products, loading, onFlashSaleClick }) => {
   };
 
   const displayedProducts = getDisplayedProducts();
-  const discountBadge = flashSale?.minDiscount;
   const productCols = isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(3, 1fr)" : "repeat(4, 1fr)";
 
   return (
-    <section id="popular-product" style={{ marginBottom: isMobile ? 32 : 36 }}>
+    <section id="popular-product" style={{ marginBottom: isMobile ? 28 : isTablet ? 40 : 72 }}>
       <SectionHeader title="Popular Products" />
 
-      {/* Tabs */}
       <div style={{
         display: "flex", gap: 6, flexWrap: "nowrap", overflowX: "auto",
         marginBottom: 16, paddingBottom: 2, scrollbarWidth: "none", WebkitOverflowScrolling: "touch"
@@ -658,97 +767,16 @@ const PopularProducts = ({ products, loading, onFlashSaleClick }) => {
 
       {loading ? (
         <div style={{ display: "grid", gridTemplateColumns: productCols, gap: 10 }}>
-          {[...Array(isMobile ? 4 : 5)].map((_, i) => (
+          {[...Array(isMobile ? 4 : 8)].map((_, i) => (
             <div key={i} style={{ height: 280, background: "#f0f0f0", borderRadius: 8, animation: "pulse 1.4s ease-in-out infinite" }} />
           ))}
         </div>
       ) : (
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr" : "290px 1fr",
-          gap: 14, alignItems: "stretch"
-        }}>
-          {/* Flash Sale Card */}
-          <div
-            onClick={() => onFlashSaleClick(flashSale?.id || null)}
-            style={{
-              borderRadius: 14, overflow: "hidden", position: "relative",
-              background: "#1a5c1a", boxShadow: "0 4px 18px rgba(0,0,0,0.18)",
-              cursor: "pointer", minHeight: isMobile ? 200 : isTablet ? 240 : 420,
-              transition: "transform 0.2s, box-shadow 0.2s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.015)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(0,0,0,0.28)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(0,0,0,0.18)"; }}
-          >
-            {(flashSale?.thumbnail || flashSale?.image) ? (
-              <img
-                src={flashSale.thumbnail || flashSale.image}
-                alt={flashSale.name || "Flash Sale"}
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%" }}
-              />
-            ) : (
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(160deg, #1a7a1a 0%, #0d4d0d 100%)" }} />
-            )}
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.70) 100%)" }} />
-
-            {discountBadge && (
-              <div style={{
-                position: "absolute", top: 16, left: 16, zIndex: 2,
-                width: 66, height: 66, borderRadius: "50%", background: "#2d9e2d",
-                border: "2.5px solid rgba(255,255,255,0.7)",
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"
-              }}>
-                <span style={{ fontSize: 18, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{discountBadge}%</span>
-                <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.9)", lineHeight: 1.2 }}>OFF</span>
-              </div>
-            )}
-
-            <div style={{
-              position: "absolute", top: 14, right: 14, zIndex: 2,
-              background: "rgba(255,230,0,0.18)", border: "1px solid rgba(255,230,0,0.4)",
-              borderRadius: 6, padding: "4px 10px", fontSize: 10,
-              fontWeight: 700, color: "#ffe600", letterSpacing: 0.5
-            }}>
-              TAP TO EXPLORE →
-            </div>
-
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: isMobile ? "16px 14px 14px" : "28px 20px 22px", zIndex: 2 }}>
-              <div style={{
-                fontSize: isMobile ? 20 : 28, fontWeight: 900, color: "#fff",
-                lineHeight: 1.15, marginBottom: 6, letterSpacing: -0.5,
-                textShadow: "0 2px 8px rgba(0,0,0,0.5)"
-              }}>
-                <span style={{ color: "#ffe600" }}>⚡</span> {flashSale?.name || "Flash Sale"}
-              </div>
-              {flashSale?.endDate && (
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", marginBottom: 14 }}>
-                  Ends: {new Date(flashSale.endDate).toLocaleDateString()}{flashSale.endTime ? ` at ${flashSale.endTime}` : ""}
-                </div>
-              )}
-              <button
-                onClick={e => { e.stopPropagation(); onFlashSaleClick(flashSale?.id || null); }}
-                style={{
-                  width: "100%", padding: "12px 0", background: "#ffe600", color: "#111",
-                  border: "none", borderRadius: 8, fontWeight: 900, fontSize: 14,
-                  cursor: "pointer", letterSpacing: 0.5, transition: "opacity 0.2s",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6
-                }}
-                onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
-                onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-              >
-                ORDER NOW ⚡
-              </button>
-              <div style={{ textAlign: "center", fontSize: 10, color: "rgba(255,255,255,0.45)", marginTop: 10 }}>www.graminkcart.in</div>
-            </div>
-          </div>
-
-          {/* Product Grid */}
-          <div style={{ display: "grid", gridTemplateColumns: productCols, gridAutoRows: "1fr", gap: 10 }}>
-            {displayedProducts.length > 0
-              ? displayedProducts.map((p, i) => <ProductCard key={p.id || i} product={p} />)
-              : <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 40, color: "#bbb", fontSize: 14 }}>No products found.</div>
-            }
-          </div>
+        <div style={{ display: "grid", gridTemplateColumns: productCols, gap: 10 }}>
+          {displayedProducts.length > 0
+            ? displayedProducts.map((p, i) => <ProductCard key={p.id || i} product={p} />)
+            : <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 40, color: "#bbb", fontSize: 14 }}>No products found.</div>
+          }
         </div>
       )}
     </section>
@@ -919,16 +947,122 @@ export default function HomePage() {
   return (
     <>
       <style>{`
-        * { box-sizing: border-box; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
-        body { font-family: 'Nunito', sans-serif; }
-        ::-webkit-scrollbar { display: none; }
-        button { touch-action: manipulation; }
-        img { max-width: 100%; }
-      `}</style>
+  * { box-sizing: border-box; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+  body { font-family: 'Nunito', sans-serif; }
+  ::-webkit-scrollbar { display: none; }
+  button { touch-action: manipulation; }
+  img { max-width: 100%; }
 
-      {/* 🔔 Global Cart Toast — always mounted */}
+  /* ── Navratri Flash Sale Animations ── */
+  @keyframes navBorderSweep {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  @keyframes navBorderGlow {
+    0%,100% { box-shadow: 0 0 0px 0px rgba(255,160,0,0); }
+    50% { box-shadow: 0 0 20px 5px rgba(255,140,0,0.4), 0 0 10px 2px rgba(220,50,50,0.2); }
+  }
+  @keyframes navPetalDrop1 {
+    0%   { transform: translateX(0)   translateY(-10px) rotate(0deg);   opacity: 0.9; }
+    100% { transform: translateX(25px) translateY(90px) rotate(360deg);  opacity: 0; }
+  }
+  @keyframes navPetalDrop2 {
+    0%   { transform: translateX(0)    translateY(-10px) rotate(0deg);   opacity: 0.8; }
+    100% { transform: translateX(-18px) translateY(80px) rotate(-300deg); opacity: 0; }
+  }
+  @keyframes navPetalDrop3 {
+    0%   { transform: translateX(0)   translateY(-10px) rotate(0deg);   opacity: 0.85; }
+    100% { transform: translateX(35px) translateY(85px) rotate(280deg);  opacity: 0; }
+  }
+  @keyframes navDiyaFlicker {
+    0%,100% { opacity: 1;   transform: scaleY(1)    translateX(-50%); }
+    25%      { opacity: .85; transform: scaleY(1.1)  translateX(-50%) rotate(-3deg); }
+    50%      { opacity: .9;  transform: scaleY(0.9)  translateX(-50%) rotate(2deg); }
+    75%      { opacity: .8;  transform: scaleY(1.08) translateX(-50%) rotate(-1deg); }
+  }
+  @keyframes navKalashFloat {
+    0%,100% { transform: translateY(0)   rotate(-3deg); }
+    50%      { transform: translateY(-7px) rotate(3deg);  }
+  }
+  @keyframes navRangoliPulse {
+    0%,100% { opacity: 0.12; }
+    50%      { opacity: 0.22; }
+  }
+  @keyframes navDiyaGlow {
+    0%,100% { filter: drop-shadow(0 0 4px #ffb300) drop-shadow(0 0 8px #ff6600);  }
+    50%      { filter: drop-shadow(0 0 10px #ffb300) drop-shadow(0 0 20px #ff4400); }
+  }
+  @keyframes navLabelPulse {
+    0%,100% { letter-spacing: 2px; opacity: 0.9; }
+    50%      { letter-spacing: 3px; opacity: 1;   }
+  }
+
+  .navratri-wrap {
+    position: relative;
+    border-radius: 18px;
+    padding: 4px;
+    background: linear-gradient(90deg, #c62828, #f57f17, #e65100, #ad1457, #c62828);
+    background-size: 200% auto;
+    animation: navBorderSweep 3s linear infinite, navBorderGlow 2.5s ease-in-out infinite;
+  }
+  .navratri-inner {
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+  }
+  .navratri-corner-diya {
+    position: absolute;
+    bottom: 0;
+    z-index: 4;
+    animation: navDiyaGlow 1.8s ease-in-out infinite;
+  }
+  .navratri-corner-diya .nav-flame {
+    position: absolute;
+    bottom: 26px;
+    left: 50%;
+    width: 7px;
+    height: 12px;
+    background: radial-gradient(ellipse at bottom, #ffeb3b 0%, #ff9800 55%, #f44336 100%);
+    border-radius: 50% 50% 30% 30%;
+    transform-origin: bottom center;
+    animation: navDiyaFlicker 0.9s ease-in-out infinite;
+    transform: translateX(-50%);
+  }
+  .navratri-kalash {
+    position: absolute;
+    top: -10px;
+    z-index: 4;
+    animation: navKalashFloat 3s ease-in-out infinite;
+  }
+  .navratri-petal {
+    position: absolute;
+    width: 9px;
+    height: 13px;
+    border-radius: 50% 50% 50% 0;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .navratri-rangoli-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    animation: navRangoliPulse 3s ease-in-out infinite;
+  }
+  .navratri-top-label {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #c62828;
+    letter-spacing: 2px;
+    padding: 6px 0 3px;
+    animation: navLabelPulse 2s ease-in-out infinite;
+  }
+`}</style>
+
       <CartToast />
 
       {page === "flash" && (
@@ -948,8 +1082,92 @@ export default function HomePage() {
           )}
           <HeroBanner />
           <FeatureCategories categories={categories} loading={catLoading} products={products} />
+
+{/* ── Navratri Flash Sale Section ── */}
+<div>
+  <div className="navratri-top-label">✦ &nbsp;नवरात्रि स्पेशल&nbsp; ✦</div>
+  <div className="navratri-wrap">
+    <div className="navratri-inner" style={{ position: "relative" }}>
+
+      {/* Rangoli SVG background */}
+      <svg className="navratri-rangoli-bg" viewBox="0 0 800 140" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0 }}>
+        <g stroke="#ff9800" strokeWidth="0.8" fill="none">
+          <circle cx="400" cy="70" r="55"/><circle cx="400" cy="70" r="40"/><circle cx="400" cy="70" r="25"/>
+          <line x1="345" y1="70" x2="455" y2="70"/><line x1="400" y1="15" x2="400" y2="125"/>
+          <line x1="361" y1="31" x2="439" y2="109"/><line x1="439" y1="31" x2="361" y2="109"/>
+          <polygon points="400,30 420,58 455,58 430,76 440,108 400,90 360,108 370,76 345,58 380,58" stroke="#e91e63" strokeWidth="0.6"/>
+          <circle cx="120" cy="70" r="38"/><line x1="82" y1="70" x2="158" y2="70"/><line x1="120" y1="32" x2="120" y2="108"/>
+          <circle cx="680" cy="70" r="38"/><line x1="642" y1="70" x2="718" y2="70"/><line x1="680" y1="32" x2="680" y2="108"/>
+        </g>
+      </svg>
+
+      {/* Falling flower petals */}
+      {[
+        { left: "8%",  top: "5px",  bg: "#e91e63", anim: "navPetalDrop1 2.8s ease-in infinite" },
+        { left: "20%", top: "2px",  bg: "#ff9800", anim: "navPetalDrop2 3.2s ease-in infinite 0.6s" },
+        { left: "35%", top: "6px",  bg: "#f44336", anim: "navPetalDrop3 2.5s ease-in infinite 1.2s" },
+        { left: "60%", top: "3px",  bg: "#ff5722", anim: "navPetalDrop1 3.0s ease-in infinite 0.4s" },
+        { left: "78%", top: "7px",  bg: "#e91e63", anim: "navPetalDrop2 2.7s ease-in infinite 0.9s" },
+        { left: "90%", top: "4px",  bg: "#ff9800", anim: "navPetalDrop3 3.1s ease-in infinite 1.5s" },
+      ].map((p, i) => (
+        <div key={i} className="navratri-petal" style={{ left: p.left, top: p.top, background: p.bg, animation: p.anim }} />
+      ))}
+
+      {/* Left Diya */}
+      <div className="navratri-corner-diya" style={{ left: 14 }}>
+        <svg width="34" height="42" viewBox="0 0 34 42">
+          <ellipse cx="17" cy="34" rx="15" ry="7" fill="#e65100" opacity="0.9"/>
+          <ellipse cx="17" cy="31" rx="11" ry="5" fill="#f57f17"/>
+          <ellipse cx="17" cy="29" rx="8"  ry="3.5" fill="#ffb74d"/>
+          <ellipse cx="17" cy="28" rx="5"  ry="2.5" fill="#ffe082"/>
+          <rect x="15" y="18" width="4" height="11" rx="2" fill="#ffe082"/>
+        </svg>
+        <div className="nav-flame" />
+      </div>
+
+      {/* Right Diya */}
+      <div className="navratri-corner-diya" style={{ right: 14 }}>
+        <svg width="34" height="42" viewBox="0 0 34 42">
+          <ellipse cx="17" cy="34" rx="15" ry="7" fill="#e65100" opacity="0.9"/>
+          <ellipse cx="17" cy="31" rx="11" ry="5" fill="#f57f17"/>
+          <ellipse cx="17" cy="29" rx="8"  ry="3.5" fill="#ffb74d"/>
+          <ellipse cx="17" cy="28" rx="5"  ry="2.5" fill="#ffe082"/>
+          <rect x="15" y="18" width="4" height="11" rx="2" fill="#ffe082"/>
+        </svg>
+        <div className="nav-flame" style={{ animationDelay: "0.35s" }} />
+      </div>
+
+      {/* Left Kalash */}
+      <div className="navratri-kalash" style={{ left: 60 }}>
+        <svg width="26" height="34" viewBox="0 0 26 34">
+          <ellipse cx="13" cy="26" rx="11" ry="6" fill="#f57f17" opacity="0.9"/>
+          <path d="M4,26 Q3,18 7,12 Q13,5 19,12 Q23,18 22,26 Z" fill="#ff9800"/>
+          <ellipse cx="13" cy="12" rx="5" ry="3" fill="#ffb74d"/>
+          <rect x="11" y="4" width="4" height="8" rx="2" fill="#f57f17"/>
+          <ellipse cx="13" cy="4" rx="4" ry="2" fill="#ffe082"/>
+        </svg>
+      </div>
+
+      {/* Right Kalash */}
+      <div className="navratri-kalash" style={{ right: 60, animationDelay: "0.9s" }}>
+        <svg width="26" height="34" viewBox="0 0 26 34">
+          <ellipse cx="13" cy="26" rx="11" ry="6" fill="#f57f17" opacity="0.9"/>
+          <path d="M4,26 Q3,18 7,12 Q13,5 19,12 Q23,18 22,26 Z" fill="#ff9800"/>
+          <ellipse cx="13" cy="12" rx="5" ry="3" fill="#ffb74d"/>
+          <rect x="11" y="4" width="4" height="8" rx="2" fill="#f57f17"/>
+          <ellipse cx="13" cy="4" rx="4" ry="2" fill="#ffe082"/>
+        </svg>
+      </div>
+
+      {/* Actual Flash Sale Banner */}
+      <FlashSaleBanner onFlashSaleClick={handleFlashSaleClick} />
+    </div>
+  </div>
+</div>
+{/* ── End Navratri Section ── */}
+
+          <PopularProducts products={products} loading={prodLoading} />
           <PromoBanners />
-          <PopularProducts products={products} loading={prodLoading} onFlashSaleClick={handleFlashSaleClick} />
           <StatsBar />
           <JustForYou products={products} loading={prodLoading} />
         </div>

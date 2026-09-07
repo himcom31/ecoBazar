@@ -177,8 +177,8 @@ const UserFooter = () => {
             />
           </div>
           <div style={{ lineHeight: 1.1 }}>
-            <span style={{ display: 'block', color: '#fff', fontWeight: 800, fontSize: 22, letterSpacing: '-0.5px' }}>Gramin</span>
-            <span style={{ display: 'block', color: '#fff', fontWeight: 800, fontSize: 22, letterSpacing: '-0.5px', marginTop: -2 }}>Cart</span>
+            <span style={{ display: 'block', color: '#fff', fontWeight: 800, fontSize: 22, letterSpacing: '-0.5px' }}>EcoGrow</span>
+            <span style={{ display: 'block', color: '#fff', fontWeight: 800, fontSize: 22, letterSpacing: '-0.5px', marginTop: -2 }}>Bazar</span>
           </div>
         </div>
 
@@ -229,7 +229,7 @@ const UserFooter = () => {
           {/* About + Contact — full width on mobile/tablet, first col on desktop */}
           <div className="uf-about-col">
             <p style={{ color: '#9ca3af', fontSize: 13, lineHeight: 1.7, marginBottom: 20, maxWidth: 380, margin: '0 0 20px' }}>
-              Gramin Cart is your trusted online shop for fresh groceries, perfumes, and daily essentials.
+              EcoGrow Bazar is your trusted online shop for fresh groceries, perfumes, and daily essentials.
               We deliver quality products at the best prices—right to your doorstep.
             </p>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -243,7 +243,7 @@ const UserFooter = () => {
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#9ca3af' }}>
                 <Mail size={15} color="#22c55e" style={{ flexShrink: 0 }} />
-                 graminkartdc@gmail.com
+                 ecogrowbazar@gmail.com
               </li>
             </ul>
           </div>
@@ -284,7 +284,7 @@ const UserFooter = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
           <span style={{ fontSize: '12px', color: '#6b7280' }}>© 2026 All Rights Reserved</span>
           <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#4b5563', display: 'inline-block' }} />
-          <span style={{ fontSize: '12px', fontWeight: '500', color: '#9ca3af' }}>GraminCart</span>
+          <span style={{ fontSize: '12px', fontWeight: '500', color: '#9ca3af' }}>EcoGrow Bazar</span>
           <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#4b5563', display: 'inline-block', margin: '0 2px' }} />
           <span style={{ fontSize: '12px', color: '#6b7280' }}>Design & Development by</span>
           <a
@@ -303,7 +303,7 @@ const UserFooter = () => {
         {/* App Store Badges */}
         <div className="uf-store-badges">
           {/* Google Play */}
-          <a href="https://play.google.com/store/apps/details?id=com.kokok1.GraminKartMobile" className="uf-store-btn">
+          <a href="https://play.google.com/store/apps/details?id=com.kokok1.EcoGrowBazarMobile" className="uf-store-btn">
             <svg viewBox="0 0 24 24" style={{ width: 22, height: 22, flexShrink: 0 }} xmlns="http://www.w3.org/2000/svg">
               <path d="M3.18 23.76a2 2 0 001.94-.21l11.81-6.82-3.36-3.36L3.18 23.76z" fill="#EA4335" />
               <path d="M20.82 10.27L17.57 8.4l-3.73 3.73 3.73 3.73 3.27-1.89a2 2 0 000-3.7z" fill="#FBBC04" />
@@ -317,7 +317,7 @@ const UserFooter = () => {
           </a>
 
           {/* App Store */}
-          <a href="https://play.google.com/store/apps/details?id=com.kokok1.GraminKartMobile" className="uf-store-btn">
+          <a href="https://play.google.com/store/apps/details?id=com.kokok1.EcoGrowBazarMobile" className="uf-store-btn">
             <svg viewBox="0 0 24 24" fill="white" style={{ width: 22, height: 22, flexShrink: 0 }} xmlns="http://www.w3.org/2000/svg">
               <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98l-.09.06c-.22.15-2.18 1.27-2.16 3.8.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.37 2.78M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
             </svg>

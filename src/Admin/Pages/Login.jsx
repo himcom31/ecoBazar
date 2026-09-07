@@ -68,7 +68,7 @@ const LoginPage = () => {
           
           <div className="absolute top-8 left-10 right-10 hidden sm:flex justify-between items-center text-[10px] font-medium z-10">
             <p className="text-white lg:text-gray-400 italic">
-              Powered by <span className="text-[#00B14F] font-bold">GraminCart</span> ©2026
+              Powered by <span className="text-[#00B14F] font-bold">EcoGrow Bazar</span> ©2026
             </p>
             <span className="bg-[#FFE5EF] text-[#FF5A9E] px-2 py-1 rounded font-bold">v1.2.2</span>
           </div>
@@ -80,7 +80,7 @@ const LoginPage = () => {
               className="w-25 h-25 object-contain"
             />
             <h1 className="text-3xl font-black text-white lg:text-[#28bc25] tracking-tighter text-center">
-              Gramin<span className="text-white lg:text-[#e79945]"> Cart</span>
+              EcoGrow<span className="text-white lg:text-[#e79945]"> Bazar</span>
             </h1>
             <p className="text-white/70 lg:text-gray-400 text-sm mt-1">Authorized Personnel Only</p>
           </div>
@@ -96,7 +96,7 @@ const LoginPage = () => {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="admin@gramincart.com"
+                placeholder="admin@ecogrowbazar.com"
                 className="w-full px-5 py-4 border border-white/20 lg:border-gray-200 rounded-2xl outline-none transition-all bg-white/10 lg:bg-gray-50 focus:ring-4 focus:ring-[#00B14F]/10 text-white lg:text-gray-800 placeholder:text-white/40 lg:placeholder:text-gray-400"
               />
             </div>

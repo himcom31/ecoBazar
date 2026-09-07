@@ -11,10 +11,12 @@ function formatDateTime(date, time) {
   if (!date) return "—";
   const d = new Date(date);
   const dateStr = d.toISOString().split("T")[0];
-  return `${dateStr} - ${time || ""}`;
+  return `${dateStr}${time ? ` · ${time}` : ""}`;
 }
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
+const isVideoUrl = (url) => /\.(mp4|webm|mov|ogg)(\?.*)?$/i.test(url || "");
+
+// ─── Icons ────────────────────────────────────────────────────
 const EyeIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -49,21 +51,127 @@ const BoltIcon = () => (
     <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
   </svg>
 );
+const BackIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+  </svg>
+);
 
-// ─── Shared styles ────────────────────────────────────────────────────────────
+// ─── Shared styles ────────────────────────────────────────────
 const inp =
-  "w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition bg-white";
+  "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition bg-white";
 const lbl = "block text-sm font-medium text-gray-700 mb-1.5";
 const Req = () => <span className="text-red-500 ml-0.5">*</span>;
 
-// ─── Spinner ──────────────────────────────────────────────────────────────────
+// ─── Spinner ──────────────────────────────────────────────────
 const Spinner = ({ sm }) => (
-  <svg
-    className={`animate-spin ${sm ? "w-4 h-4" : "w-8 h-8"} border-4 border-green-400 border-t-transparent rounded-full`}
-    fill="none"
-    viewBox="0 0 24 24"
+  <div
+    className={`${sm ? "w-4 h-4 border-2" : "w-8 h-8 border-4"} animate-spin border-green-400 border-t-transparent rounded-full`}
   />
 );
+
+// ─── Page Header ─────────────────────────────────────────────
+function PageHeader({ title, subtitle, onBack, action }) {
+  return (
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
+      <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex-shrink-0 h-9 w-9 flex items-center justify-center rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 transition"
+            >
+              <BackIcon />
+            </button>
+          )}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-yellow-500 flex-shrink-0"><BoltIcon /></span>
+              <h1 className="text-sm font-bold text-gray-900 truncate">{title}</h1>
+            </div>
+            {subtitle && <p className="text-[10px] text-gray-400 truncate">{subtitle}</p>}
+          </div>
+        </div>
+        {action && <div className="flex-shrink-0">{action}</div>}
+      </div>
+    </header>
+  );
+}
+
+// ─── Alert ───────────────────────────────────────────────────
+function Alert({ msg, onDismiss }) {
+  if (!msg) return null;
+  return (
+    <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+      <span className="flex-shrink-0">⚠️</span>
+      <span className="flex-1">{msg}</span>
+      {onDismiss && (
+        <button onClick={onDismiss} className="flex-shrink-0 text-red-400 hover:text-red-600 text-xs underline">
+          dismiss
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── Card wrapper ─────────────────────────────────────────────
+function Card({ children, className = "" }) {
+  return (
+    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+// ─── Reusable Media Upload Box (image OR video) ────────────────
+function MediaUploadBox({ label, hint, preview, file, existingIsVideo, inputRef, onChange, onDrop, onRemove, heightClass = "h-40 sm:h-52" }) {
+  const showingVideo = file ? file.type.startsWith("video/") : existingIsVideo;
+
+  return (
+    <div>
+      <p className={lbl}>
+        {label}{" "}
+        {hint && <span className="text-blue-500 font-normal text-xs">{hint}</span>}{" "}
+        <Req />
+      </p>
+      <div
+        onClick={() => inputRef.current.click()}
+        onDrop={onDrop}
+        onDragOver={(e) => e.preventDefault()}
+        className={`w-full ${heightClass} border-2 border-dashed border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:border-green-400 hover:bg-green-50 active:bg-green-100 transition flex items-center justify-center bg-gray-50 group relative`}
+      >
+        {preview ? (
+          showingVideo ? (
+            <video src={preview} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+          ) : (
+            <img src={preview} alt="preview" className="w-full h-full object-cover" />
+          )
+        ) : (
+          <div className="flex flex-col items-center text-gray-400 group-hover:text-green-500 transition text-xs gap-1">
+            <span className="text-3xl">🖼</span>
+            <span>Tap or drag to upload image/video</span>
+          </div>
+        )}
+        {preview && showingVideo && (
+          <span className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+            VIDEO
+          </span>
+        )}
+      </div>
+      {preview && (
+        <button
+          type="button"
+          onClick={onRemove}
+          className="mt-2 text-xs text-red-500 hover:underline w-full text-center"
+        >
+          Remove
+        </button>
+      )}
+      <input ref={inputRef} type="file" accept="image/*,video/*" onChange={onChange} className="hidden" />
+    </div>
+  );
+}
 
 // =============================================================================
 // EDIT FLASH SALE
@@ -78,27 +186,55 @@ function EditFlashSale({ sale, onBack, onUpdated }) {
     endTime: sale.endTime || "",
     description: sale.description || "",
   });
-  const [thumbnail, setThumbnail] = useState(null);
-  const [thumbnailPreview, setThumbnailPreview] = useState(sale.thumbnail || null);
+
+  // Desktop media
+  const [desktopFile, setDesktopFile] = useState(null);
+  const [desktopPreview, setDesktopPreview] = useState(sale.desktopMedia || null);
+  const desktopExistingIsVideo = sale.desktopMediaType === "video";
+  const desktopInputRef = useRef(null);
+
+  // Mobile media
+  const [mobileFile, setMobileFile] = useState(null);
+  const [mobilePreview, setMobilePreview] = useState(sale.mobileMedia || null);
+  const mobileExistingIsVideo = sale.mobileMediaType === "video";
+  const mobileInputRef = useRef(null);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const fileRef = useRef(null);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleFileChange = (e) => {
+  const handleMediaChange = (e, setFile, setPreview) => {
     const file = e.target.files[0];
     if (!file) return;
-    setThumbnail(file);
-    setThumbnailPreview(URL.createObjectURL(file));
+    const okType = file.type.startsWith("image/") || file.type.startsWith("video/");
+    if (!okType) { setError("Please select a valid image or video file."); return; }
+    setFile(file);
+    setPreview(URL.createObjectURL(file));
+    setError("");
   };
 
-  const handleDrop = (e) => {
+  const handleMediaDrop = (e, setFile, setPreview) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (!file?.type.startsWith("image/")) return;
-    setThumbnail(file);
-    setThumbnailPreview(URL.createObjectURL(file));
+    if (!file) return;
+    const okType = file.type.startsWith("image/") || file.type.startsWith("video/");
+    if (!okType) { setError("Please drop a valid image or video file."); return; }
+    setFile(file);
+    setPreview(URL.createObjectURL(file));
+    setError("");
+  };
+
+  const removeDesktopMedia = () => {
+    setDesktopFile(null);
+    setDesktopPreview(null);
+    if (desktopInputRef.current) desktopInputRef.current.value = "";
+  };
+
+  const removeMobileMedia = () => {
+    setMobileFile(null);
+    setMobilePreview(null);
+    if (mobileInputRef.current) mobileInputRef.current.value = "";
   };
 
   const validate = () => {
@@ -109,6 +245,8 @@ function EditFlashSale({ sale, onBack, onUpdated }) {
     if (new Date(`${endDate}T${endTime}`) <= new Date(`${startDate}T${startTime}`))
       return "End must be after Start.";
     if (!description.trim()) return "Description is required.";
+    if (!desktopPreview) return "Desktop Banner is required.";
+    if (!mobilePreview) return "Mobile Banner is required.";
     return null;
   };
 
@@ -120,7 +258,10 @@ function EditFlashSale({ sale, onBack, onUpdated }) {
     try {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-      if (thumbnail) fd.append("thumbnail", thumbnail);
+      // sirf jo naya file select hua hai wahi bhejo — baaki backend purana rakhega
+      if (desktopFile) fd.append("desktopMedia", desktopFile);
+      if (mobileFile) fd.append("mobileMedia", mobileFile);
+
       const res = await fetch(`${BASE_URL}/update/${sale.id}`, {
         method: "PUT",
         headers: authHeaders(),
@@ -137,99 +278,95 @@ function EditFlashSale({ sale, onBack, onUpdated }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-10">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-center gap-2 mb-8">
-          <span className="text-yellow-500"><BoltIcon /></span>
-          <h1 className="text-2xl font-bold text-gray-900">Edit FlashSale</h1>
-        </div>
-
-        {error && (
-          <div className="mb-5 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
-            ⚠️ {error}
-          </div>
-        )}
-
-        <div className="flex gap-8">
-          {/* Fields */}
-          <div className="flex-1 space-y-5">
-            <div>
-              <label className={lbl}>Name <Req /></label>
-              <input name="name" value={form.name} onChange={handleChange} placeholder="Enter name" className={inp} />
-            </div>
-            <div>
-              <label className={lbl}>Minimum Discount <Req /></label>
-              <input name="minDiscount" type="number" value={form.minDiscount} onChange={handleChange} placeholder="e.g. 20" className={inp} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={lbl}>Start Date <Req /></label>
-                <input name="startDate" type="date" value={form.startDate} onChange={handleChange} className={inp} />
-              </div>
-              <div>
-                <label className={lbl}>Start Time <Req /></label>
-                <input name="startTime" type="time" value={form.startTime} onChange={handleChange} className={inp} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={lbl}>End Date <Req /></label>
-                <input name="endDate" type="date" value={form.endDate} onChange={handleChange} className={inp} />
-              </div>
-              <div>
-                <label className={lbl}>End Time <Req /></label>
-                <input name="endTime" type="time" value={form.endTime} onChange={handleChange} className={inp} />
-              </div>
-            </div>
-            <div>
-              <label className={lbl}>Description <Req /></label>
-              <textarea name="description" value={form.description} onChange={handleChange} rows={4} className={`${inp} resize-y`} />
-            </div>
-          </div>
-
-          {/* Thumbnail */}
-          <div className="w-60 flex-shrink-0">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Thumbnail <span className="text-blue-500 font-normal">Ratio 3:2 (600 × 400 px)</span> <Req />
-            </label>
-            <div
-              onClick={() => fileRef.current.click()}
-              onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
-              className="w-full h-52 border-2 border-dashed border-gray-300 rounded-xl overflow-hidden cursor-pointer hover:border-green-400 hover:bg-green-50 transition flex items-center justify-center bg-gray-100 group"
-            >
-              {thumbnailPreview ? (
-                <img src={thumbnailPreview} alt="preview" className="w-full h-full object-cover" />
-              ) : (
-                <div className="flex flex-col items-center text-gray-400 group-hover:text-green-500 transition text-xs">
-                  <span className="text-3xl mb-1">🖼</span>
-                  Click or drag to upload
-                </div>
-              )}
-            </div>
-            {thumbnailPreview && (
-              <button
-                onClick={() => { setThumbnail(null); setThumbnailPreview(null); fileRef.current.value = ""; }}
-                className="mt-2 text-xs text-red-500 hover:underline w-full text-center"
-              >
-                Remove image
-              </button>
-            )}
-            <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between mt-10 pt-6 border-t border-gray-200">
-          <button onClick={onBack} disabled={loading}
-            className="px-6 py-2.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-100 transition">
-            Cancel
+    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+      <PageHeader
+        title="Edit Flash Sale"
+        subtitle={sale.name}
+        onBack={onBack}
+        action={
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="hidden sm:flex items-center gap-2 px-5 py-2 rounded-xl bg-green-500 hover:bg-green-600 text-white text-xs font-semibold transition disabled:opacity-60"
+          >
+            {loading ? <><Spinner sm /> Updating…</> : "Update"}
           </button>
-          <button onClick={handleSubmit} disabled={loading}
-            className="px-8 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition flex items-center gap-2 shadow-sm disabled:opacity-60">
-            {loading ? <><Spinner sm /> Updating...</> : "Update"}
-          </button>
-        </div>
+        }
+      />
+
+      <div className="max-w-3xl mx-auto px-4 py-4 space-y-4">
+        {error && <Alert msg={error} onDismiss={() => setError("")} />}
+
+        {/* Desktop & Mobile Banners */}
+        <Card className="p-4 space-y-5">
+          <MediaUploadBox
+            label="Desktop Banner"
+            hint="1600 × 550 px — image or video"
+            preview={desktopPreview}
+            file={desktopFile}
+            existingIsVideo={desktopExistingIsVideo}
+            inputRef={desktopInputRef}
+            onChange={(e) => handleMediaChange(e, setDesktopFile, setDesktopPreview)}
+            onDrop={(e) => handleMediaDrop(e, setDesktopFile, setDesktopPreview)}
+            onRemove={removeDesktopMedia}
+          />
+          <MediaUploadBox
+            label="Mobile Banner"
+            hint="600 × 400 px — image or video"
+            preview={mobilePreview}
+            file={mobileFile}
+            existingIsVideo={mobileExistingIsVideo}
+            inputRef={mobileInputRef}
+            onChange={(e) => handleMediaChange(e, setMobileFile, setMobilePreview)}
+            onDrop={(e) => handleMediaDrop(e, setMobileFile, setMobilePreview)}
+            onRemove={removeMobileMedia}
+          />
+        </Card>
+
+        {/* Fields */}
+        <Card className="p-4 space-y-4">
+          <div>
+            <label className={lbl}>Name <Req /></label>
+            <input name="name" value={form.name} onChange={handleChange} placeholder="Sale name" className={inp} />
+          </div>
+          <div>
+            <label className={lbl}>Minimum Discount (%) <Req /></label>
+            <input name="minDiscount" type="number" value={form.minDiscount} onChange={handleChange} placeholder="e.g. 20" className={inp} />
+          </div>
+
+          {/* Dates — 2 col */}
+          <div>
+            <p className={lbl}>Start <Req /></p>
+            <div className="grid grid-cols-2 gap-3">
+              <input name="startDate" type="date" value={form.startDate} onChange={handleChange} className={inp} />
+              <input name="startTime" type="time" value={form.startTime} onChange={handleChange} className={inp} />
+            </div>
+          </div>
+          <div>
+            <p className={lbl}>End <Req /></p>
+            <div className="grid grid-cols-2 gap-3">
+              <input name="endDate" type="date" value={form.endDate} onChange={handleChange} className={inp} />
+              <input name="endTime" type="time" value={form.endTime} onChange={handleChange} className={inp} />
+            </div>
+          </div>
+
+          <div>
+            <label className={lbl}>Description <Req /></label>
+            <textarea name="description" value={form.description} onChange={handleChange} rows={4} className={`${inp} resize-y`} />
+          </div>
+        </Card>
+      </div>
+
+      {/* Mobile bottom bar */}
+      <div className="fixed bottom-0 left-0 right-0 sm:hidden bg-white border-t border-gray-100 px-4 py-3 flex gap-3 shadow-lg z-30">
+        <button onClick={onBack} disabled={loading}
+          className="flex-1 py-3 text-sm font-semibold text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition">
+          Cancel
+        </button>
+        <button onClick={handleSubmit} disabled={loading}
+          className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold bg-green-500 hover:bg-green-600 active:bg-green-700 text-white rounded-xl transition disabled:opacity-60">
+          {loading ? <><Spinner sm /> Updating…</> : "Update"}
+        </button>
       </div>
     </div>
   );
@@ -265,34 +402,41 @@ function UpdateProductModal({ saleId, product, onClose, onUpdated }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl w-full max-w-sm shadow-2xl">
-        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
-          <span className="text-sm font-semibold text-gray-800">Update Product</span>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition"><XIcon /></button>
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-3xl shadow-2xl">
+        {/* Handle bar (mobile) */}
+        <div className="sm:hidden flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 bg-gray-200 rounded-full" />
+        </div>
+        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-gray-100">
+          <span className="text-sm font-bold text-gray-800">Update Product</span>
+          <button onClick={onClose} className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition">
+            <XIcon />
+          </button>
         </div>
         <div className="px-5 py-4 space-y-4">
-          <div>
-            <p className="text-xs text-gray-500 mb-0.5">Name</p>
-            <p className="text-sm font-medium text-gray-800">{product.name}</p>
+          <div className="p-3 bg-gray-50 rounded-xl">
+            <p className="text-xs text-gray-500 mb-0.5">Product</p>
+            <p className="text-sm font-semibold text-gray-800">{product.name}</p>
           </div>
-          {error && <p className="text-xs text-red-500">⚠️ {error}</p>}
+          {error && <Alert msg={error} />}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Price <Req /></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Price <Req /></label>
             <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className={inp} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity <Req /></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Quantity <Req /></label>
             <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} className={inp} />
           </div>
         </div>
-        <div className="flex justify-end gap-3 px-5 pb-5">
-          <button onClick={onClose} className="px-5 py-2 rounded-lg text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
-            Close
+        <div className="flex gap-3 px-5 pb-5">
+          <button onClick={onClose}
+            className="flex-1 py-3 rounded-xl text-sm font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
+            Cancel
           </button>
           <button onClick={handleUpdate} disabled={loading}
-            className="px-5 py-2 rounded-lg text-sm font-semibold bg-green-500 hover:bg-green-600 text-white transition disabled:opacity-60 flex items-center gap-2">
-            {loading ? <><Spinner sm /> Updating...</> : "Update"}
+            className="flex-1 py-3 rounded-xl text-sm font-bold bg-green-500 hover:bg-green-600 text-white transition disabled:opacity-60 flex items-center justify-center gap-2">
+            {loading ? <><Spinner sm /> Saving…</> : "Update"}
           </button>
         </div>
       </div>
@@ -312,6 +456,7 @@ function FlashSaleDetail({ saleId, onBack }) {
   const [addingProduct, setAddingProduct] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
   const [error, setError] = useState("");
+  const [showProductPicker, setShowProductPicker] = useState(false);
 
   const fetchSale = async () => {
     try {
@@ -331,12 +476,10 @@ function FlashSaleDetail({ saleId, onBack }) {
     try {
       const res = await fetch(PRODUCTS_API, { headers: authHeaders() });
       const data = await res.json();
-      // Handle any response shape and ALWAYS guarantee an array
       const raw = data.products ?? data.data ?? data;
       setAllProducts(Array.isArray(raw) ? raw : []);
     } catch (e) {
-      console.error("Products fetch error:", e);
-      setAllProducts([]); // never leave as non-array
+      setAllProducts([]);
     }
   };
 
@@ -358,6 +501,7 @@ function FlashSaleDetail({ saleId, onBack }) {
       if (!res.ok || !data.success) throw new Error(data.message || "Failed to add product");
       setProducts(Array.isArray(data.sale.products) ? data.sale.products : []);
       setSelectedProductId("");
+      setShowProductPicker(false);
       setError("");
     } catch (e) {
       setError(e.message);
@@ -382,11 +526,12 @@ function FlashSaleDetail({ saleId, onBack }) {
   };
 
   const handleProductUpdated = (updatedProduct) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === updatedProduct.id ? { ...p, ...updatedProduct } : p))
-    );
+    setProducts((prev) => prev.map((p) => p.id === updatedProduct.id ? { ...p, ...updatedProduct } : p));
     setEditProduct(null);
   };
+
+  const addedIds = new Set(products.map((p) => String(p.id)));
+  const availableProducts = allProducts.filter((p) => !addedIds.has(String(p.id)));
 
   if (loadingPage) {
     return (
@@ -398,157 +543,200 @@ function FlashSaleDetail({ saleId, onBack }) {
 
   if (!sale) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4 text-red-500">
-        <p>{error || "Flash Sale not found"}</p>
-        <button onClick={onBack} className="text-sm text-gray-500 hover:text-gray-800 underline">
-          ← Back
-        </button>
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4 text-red-500 px-4">
+        <p className="text-center">{error || "Flash Sale not found"}</p>
+        <button onClick={onBack} className="text-sm text-gray-500 hover:text-gray-800 underline">← Back</button>
       </div>
     );
   }
 
-  // Exclude already-added products from the dropdown
-  const addedIds = new Set(products.map((p) => String(p.id)));
-  const availableProducts = allProducts.filter((p) => !addedIds.has(String(p.id)));
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto px-6 py-10">
-        <button onClick={onBack} className="mb-6 flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition">
-          ← Back to Flash Sales
-        </button>
+    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+      <PageHeader
+        title={sale.name}
+        subtitle="Flash Sale Details"
+        onBack={onBack}
+        action={
+          <button
+            onClick={() => setShowProductPicker(true)}
+            className="hidden sm:flex items-center gap-1.5 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-semibold rounded-xl transition shadow-sm"
+          >
+            <PlusIcon /> Add Product
+          </button>
+        }
+      />
 
-        {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
-            ⚠️ {error}
-            <button onClick={() => setError("")} className="ml-3 text-red-400 hover:text-red-600 text-xs underline">dismiss</button>
-          </div>
-        )}
+      <div className="max-w-3xl mx-auto px-4 py-4 space-y-4">
+        {error && <Alert msg={error} onDismiss={() => setError("")} />}
 
-        {/* Deal Info */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Flash Deal Details</h2>
-          <div className="grid grid-cols-3 gap-6 pb-4 border-b border-gray-100 mb-4">
-            <div>
-              <p className="text-xs text-gray-500 font-medium mb-0.5">Deal Name:</p>
-              <p className="text-sm text-gray-800 font-semibold">{sale.name}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-medium mb-0.5">Start Date:</p>
-              <p className="text-sm text-gray-800">{formatDateTime(sale.startDate, sale.startTime)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-medium mb-0.5">End Date:</p>
-              <p className="text-sm text-gray-800">{formatDateTime(sale.endDate, sale.endTime)}</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-6">
-            <div>
-              <p className="text-xs text-gray-500 font-medium mb-0.5">Minimum Discount:</p>
-              <p className="text-sm text-gray-800 font-semibold">{sale.minDiscount}%</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-medium mb-0.5">Publish Status:</p>
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                  sale.isActive ? "bg-green-500 text-white" : "bg-gray-200 text-gray-600"
-                }`}
-              >
-                {sale.isActive ? "Active" : "Inactive"}
+        {/* Sale Info */}
+        <Card>
+          <div className="px-4 pt-4 pb-3 border-b border-gray-50">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-gray-800">Deal Info</h2>
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${sale.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                {sale.isActive ? "● Active" : "○ Inactive"}
               </span>
             </div>
           </div>
-        </div>
 
-        {/* Add Product */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Add New Product</h3>
-          <div className="flex gap-3">
-            <select
-              value={selectedProductId}
-              onChange={(e) => setSelectedProductId(e.target.value)}
-              className={`flex-1 ${inp}`}
-            >
-              <option value="">Select Product</option>
-              {availableProducts.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}{p.price != null ? ` — $${p.price}` : ""}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleAddProduct}
-              disabled={!selectedProductId || addingProduct}
-              className="flex items-center gap-2 px-5 py-2.5 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition disabled:opacity-50 whitespace-nowrap"
-            >
-              {addingProduct ? "Adding..." : <><PlusIcon /> Add</>}
-            </button>
+          {/* Desktop / Mobile media previews */}
+          <div className="px-4 pt-3 grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Desktop Banner</p>
+              <div className="w-full h-24 rounded-lg overflow-hidden bg-gray-100 border border-gray-100">
+                {sale.desktopMedia ? (
+                  sale.desktopMediaType === "video" ? (
+                    <video src={sale.desktopMedia} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+                  ) : (
+                    <img src={sale.desktopMedia} alt="Desktop banner" className="w-full h-full object-cover" />
+                  )
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-300 text-xl">🖼</div>
+                )}
+              </div>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Mobile Banner</p>
+              <div className="w-full h-24 rounded-lg overflow-hidden bg-gray-100 border border-gray-100">
+                {sale.mobileMedia ? (
+                  sale.mobileMediaType === "video" ? (
+                    <video src={sale.mobileMedia} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+                  ) : (
+                    <img src={sale.mobileMedia} alt="Mobile banner" className="w-full h-full object-cover" />
+                  )
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-300 text-xl">🖼</div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Products Table */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900">Added Products</h3>
+          <div className="p-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {[
+              { label: "Min Discount", value: `${sale.minDiscount}%` },
+              { label: "Start", value: formatDateTime(sale.startDate, sale.startTime) },
+              { label: "End", value: formatDateTime(sale.endDate, sale.endTime) },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <p className="text-[10px] font-semibold text-gray-400 uppercase mb-0.5">{label}</p>
+                <p className="text-sm font-semibold text-gray-800">{value}</p>
+              </div>
+            ))}
           </div>
+        </Card>
+
+        {/* Products */}
+        <Card>
+          <div className="px-4 py-3 border-b border-gray-50 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-gray-800">
+              Products <span className="text-gray-400 font-normal">({products.length})</span>
+            </h3>
+          </div>
+
           {products.length === 0 ? (
-            <div className="py-16 text-center text-gray-400 text-sm">No products added yet.</div>
+            <div className="py-12 text-center text-gray-400 text-sm">No products added yet.</div>
           ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-50 text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                  <th className="px-6 py-3 text-left w-12">SL</th>
-                  <th className="px-6 py-3 text-left w-20">Thumbnail</th>
-                  <th className="px-6 py-3 text-left">Product Name</th>
-                  <th className="px-6 py-3 text-left">Price</th>
-                  <th className="px-6 py-3 text-left">Quantity</th>
-                  <th className="px-6 py-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {products.map((product, i) => (
-                  <tr key={product.id} className="hover:bg-gray-50/60 transition">
-                    <td className="px-6 py-4 text-sm text-gray-600">{i + 1}</td>
-                    <td className="px-6 py-4">
-                      {product.thumbnail || product.image ? (
-                        <img
-                          src={product.thumbnail || product.image}
-                          alt={product.name}
-                          className="w-12 h-12 object-cover rounded-lg border border-gray-100"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-300 text-lg">🖼</div>
+            <div className="divide-y divide-gray-50">
+              {products.map((product, i) => (
+                <div key={product.id} className="flex items-center gap-3 px-4 py-3">
+                  {/* Thumbnail */}
+                  {product.thumbnail || product.image ? (
+                    <img src={product.thumbnail || product.image} alt={product.name}
+                      className="w-12 h-12 flex-shrink-0 object-cover rounded-xl border border-gray-100" />
+                  ) : (
+                    <div className="w-12 h-12 flex-shrink-0 bg-gray-100 rounded-xl flex items-center justify-center text-gray-300 text-lg">🖼</div>
+                  )}
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 truncate">{product.name}</p>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      <span className="text-xs text-green-600 font-bold">
+                        ৳{Number(product.sellingPrice ?? product.price).toFixed(2)}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        Stock: {product.stockQuantity ?? product.stock ?? 0}
+                      </span>
+                      {(product.sold > 0) && (
+                        <span className="text-xs text-gray-400">Sold: {product.sold}</span>
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-800">{product.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">${Number(product.sellingPrice ?? product.price).toFixed(2)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      <div>{product.stockQuantity ?? product.stock ?? 0}</div>
-                      <div className="text-xs text-gray-400">Sold: {product.sold || 0}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => setEditProduct(product)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition"
-                        >
-                          <EditIcon />
-                        </button>
-                        <button
-                          onClick={() => handleRemoveProduct(product.id)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition"
-                        >
-                          <TrashIcon />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-1.5 flex-shrink-0">
+                    <button onClick={() => setEditProduct(product)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100 active:bg-green-200 transition">
+                      <EditIcon />
+                    </button>
+                    <button onClick={() => handleRemoveProduct(product.id)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 active:bg-red-200 transition">
+                      <TrashIcon />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
-        </div>
+        </Card>
       </div>
+
+      {/* Mobile: Add Product FAB */}
+      <button
+        onClick={() => setShowProductPicker(true)}
+        className="sm:hidden fixed bottom-6 right-4 h-14 w-14 flex items-center justify-center bg-green-500 hover:bg-green-600 active:bg-green-700 text-white rounded-full shadow-lg shadow-green-200 z-20 transition"
+      >
+        <PlusIcon />
+      </button>
+
+      {/* Add Product Drawer/Modal */}
+      {showProductPicker && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0" onClick={() => setShowProductPicker(false)} />
+          <div className="relative bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-3xl shadow-2xl">
+            <div className="sm:hidden flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            </div>
+            <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-gray-100">
+              <span className="text-sm font-bold text-gray-800">Add Product to Sale</span>
+              <button onClick={() => setShowProductPicker(false)}
+                className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition">
+                <XIcon />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-4">
+              <div>
+                <label className={lbl}>Select Product <Req /></label>
+                <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} className={inp}>
+                  <option value="">Choose a product…</option>
+                  {availableProducts.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}{p.price != null ? ` — ৳${p.price}` : ""}
+                    </option>
+                  ))}
+                </select>
+                {availableProducts.length === 0 && (
+                  <p className="text-xs text-gray-400 mt-1">All products already added.</p>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-3 px-5 pb-5">
+              <button onClick={() => setShowProductPicker(false)}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+                Cancel
+              </button>
+              <button
+                onClick={handleAddProduct}
+                disabled={!selectedProductId || addingProduct}
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-green-500 hover:bg-green-600 active:bg-green-700 text-white transition disabled:opacity-50"
+              >
+                {addingProduct ? <><Spinner sm /> Adding…</> : <><PlusIcon /> Add</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {editProduct && (
         <UpdateProductModal
@@ -565,7 +753,7 @@ function FlashSaleDetail({ saleId, onBack }) {
 // =============================================================================
 // FLASH SALE LIST
 // =============================================================================
-function FlashSaleList({ onCreateNew, onView, onEdit }) {
+function FlashSaleList({ onView, onEdit }) {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -588,132 +776,103 @@ function FlashSaleList({ onCreateNew, onView, onEdit }) {
 
   const handleToggle = async (sale) => {
     try {
-      const res = await fetch(`${BASE_URL}/toggle/${sale.id}`, {
-        method: "PATCH",
-        headers: authHeaders(),
-      });
+      const res = await fetch(`${BASE_URL}/toggle/${sale.id}`, { method: "PATCH", headers: authHeaders() });
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
-      setSales((prev) =>
-        prev.map((s) => (s.id === sale.id ? { ...s, isActive: data.sale.isActive } : s))
-      );
-    } catch (e) {
-      alert(e.message);
-    }
+      setSales((prev) => prev.map((s) => s.id === sale.id ? { ...s, isActive: data.sale.isActive } : s));
+    } catch (e) { alert(e.message); }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this flash sale? This cannot be undone.")) return;
     try {
-      const res = await fetch(`${BASE_URL}/delete/${id}`, {
-        method: "DELETE",
-        headers: authHeaders(),
-      });
+      const res = await fetch(`${BASE_URL}/delete/${id}`, { method: "DELETE", headers: authHeaders() });
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
       setSales((prev) => prev.filter((s) => s.id !== id));
-    } catch (e) {
-      alert(e.message);
-    }
+    } catch (e) { alert(e.message); }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-10">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Flash Sales</h1>
-          
-        </div>
+    <div className="min-h-screen bg-gray-50 pb-8">
+      <PageHeader title="Flash Sales" />
 
-        {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
-            ⚠️ {error}
-          </div>
+      <div className="max-w-3xl mx-auto px-4 py-4 space-y-3">
+        {error && <Alert msg={error} />}
+
+        {loading ? (
+          <div className="py-20 flex justify-center"><Spinner /></div>
+        ) : sales.length === 0 ? (
+          <Card className="py-20 text-center text-gray-400 text-sm">
+            No flash sales yet. Create one!
+          </Card>
+        ) : (
+          sales.map((sale, i) => (
+            <Card key={sale.id}>
+              <div className="p-4 flex gap-3">
+                {/* Thumbnail — desktopMedia use, image ya video dono handle */}
+                <div className="flex-shrink-0">
+                  {sale.desktopMedia ? (
+                    sale.desktopMediaType === "video" || isVideoUrl(sale.desktopMedia) ? (
+                      <video
+                        src={sale.desktopMedia}
+                        className="w-16 h-16 sm:w-20 sm:h-16 object-cover rounded-xl border border-gray-100"
+                        autoPlay muted loop playsInline
+                      />
+                    ) : (
+                      <img src={sale.desktopMedia} alt={sale.name}
+                        className="w-16 h-16 sm:w-20 sm:h-16 object-cover rounded-xl border border-gray-100" />
+                    )
+                  ) : (
+                    <div className="w-16 h-16 sm:w-20 sm:h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-300 text-2xl">🖼</div>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-bold text-gray-800 truncate">{sale.name}</p>
+                    {/* Toggle */}
+                    <button
+                      onClick={() => handleToggle(sale)}
+                      className={`flex-shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${sale.isActive ? "bg-green-500" : "bg-gray-300"}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${sale.isActive ? "translate-x-6" : "translate-x-1"}`} />
+                    </button>
+                  </div>
+
+                  <div className="mt-1 space-y-0.5">
+                    <p className="text-xs text-gray-500 truncate">
+                      <span className="font-medium text-gray-600">Start:</span> {formatDateTime(sale.startDate, sale.startTime)}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      <span className="font-medium text-gray-600">End:</span> {formatDateTime(sale.endDate, sale.endTime)}
+                    </p>
+                    {sale.description && (
+                      <p className="text-xs text-gray-400 truncate mt-1">{sale.description}</p>
+                    )}
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-2 mt-3">
+                    <button onClick={() => onView(sale.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 active:bg-green-200 text-xs font-semibold transition">
+                      <EyeIcon /> View
+                    </button>
+                    <button onClick={() => onEdit(sale)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 active:bg-blue-200 text-xs font-semibold transition">
+                      <EditIcon /> Edit
+                    </button>
+                    <button onClick={() => handleDelete(sale.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 active:bg-red-200 text-xs font-semibold transition">
+                      <TrashIcon /> Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))
         )}
-
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          {loading ? (
-            <div className="py-20 flex justify-center"><Spinner /></div>
-          ) : sales.length === 0 ? (
-            <div className="py-20 text-center text-gray-400">No flash sales yet. Create one!</div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-50 text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                  <th className="px-5 py-3.5 text-left w-10">SL</th>
-                  <th className="px-5 py-3.5 text-left w-24">Thumbnail</th>
-                  <th className="px-5 py-3.5 text-left">Name</th>
-                  <th className="px-5 py-3.5 text-left">Start Date</th>
-                  <th className="px-5 py-3.5 text-left">End Date</th>
-                  <th className="px-5 py-3.5 text-left">Status</th>
-                  <th className="px-5 py-3.5 text-left">Description</th>
-                  <th className="px-5 py-3.5 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {sales.map((sale, i) => (
-                  <tr key={sale.id} className="hover:bg-gray-50/60 transition">
-                    <td className="px-5 py-4 text-sm text-gray-600">{i + 1}</td>
-                    <td className="px-5 py-4">
-                      {sale.thumbnail ? (
-                        <img src={sale.thumbnail} alt={sale.name} className="w-16 h-12 object-cover rounded-lg border border-gray-100" />
-                      ) : (
-                        <div className="w-16 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-300">🖼</div>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 text-sm font-medium text-gray-800">{sale.name}</td>
-                    <td className="px-5 py-4 text-sm text-gray-600 whitespace-nowrap">
-                      {formatDateTime(sale.startDate, sale.startTime)}
-                    </td>
-                    <td className="px-5 py-4 text-sm text-gray-600 whitespace-nowrap">
-                      {formatDateTime(sale.endDate, sale.endTime)}
-                    </td>
-                    <td className="px-5 py-4">
-                      <button
-                        onClick={() => handleToggle(sale)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                          sale.isActive ? "bg-green-500" : "bg-gray-300"
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                            sale.isActive ? "translate-x-6" : "translate-x-1"
-                          }`}
-                        />
-                      </button>
-                    </td>
-                    <td className="px-5 py-4 text-sm text-gray-600 max-w-xs truncate">{sale.description}</td>
-                    <td className="px-5 py-4">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => onView(sale.id)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition"
-                          title="View"
-                        >
-                          <EyeIcon />
-                        </button>
-                        <button
-                          onClick={() => onEdit(sale)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-100 transition"
-                          title="Edit"
-                        >
-                          <EditIcon />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(sale.id)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition"
-                          title="Delete"
-                        >
-                          <TrashIcon />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
       </div>
     </div>
   );
@@ -734,18 +893,11 @@ export default function FlashSaleApp() {
   }
 
   if (page === "edit") {
-    return (
-      <EditFlashSale
-        sale={selectedSale}
-        onBack={goList}
-        onUpdated={goList}
-      />
-    )
+    return <EditFlashSale sale={selectedSale} onBack={goList} onUpdated={goList} />;
   }
 
   return (
     <FlashSaleList
-      onCreateNew={() => setPage("create")}
       onView={(id) => { setSelectedSaleId(id); setPage("view"); }}
       onEdit={(sale) => { setSelectedSale(sale); setPage("edit"); }}
     />
